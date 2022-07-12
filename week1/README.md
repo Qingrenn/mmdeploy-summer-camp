@@ -107,9 +107,9 @@ squeezenet_v1.1.table
 4.Inference
 ```bash
 cd int8
-ln -s squeezenet_v1.1-int8.bin squeezenet_v1.1.bin
-ln -s squeezenet_v1.1-int8.param squeezenet_v1.1.param
-${NCNN_DIR}/build-20220711/examples/squeezenet ../images/screenshot.png
+ln -s ../squeezenet_v1.1-int8.bin squeezenet_v1.1.bin
+ln -s ../squeezenet_v1.1-int8.param squeezenet_v1.1.param
+${NCNN_DIR}/build-20220711/examples/squeezenet ../screenshot.png
 ```
 <left><img src="images/squeezenet_int8.png" width=100%></left>
 
