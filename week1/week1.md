@@ -18,7 +18,7 @@ make -j$(nproc)
 
 2.下载[测试样本](https://github.com/nihui/ncnn-android-squeezenet/blob/master/screenshot.png)至`ncnn/images`，运行squeezenet Demo，验证ncnn推理是否正常:
 
-<left><img src="https://github.com/nihui/ncnn-android-squeezenet/blob/master/screenshot.png" height=20%></left>
+<left><img src="https://github.com/nihui/ncnn-android-squeezenet/blob/master/screenshot.png" width=20%></left>
 
 ```bash
 cd ncnn/examples
