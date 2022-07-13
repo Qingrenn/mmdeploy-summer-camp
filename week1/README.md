@@ -112,4 +112,3 @@ ln -s ../squeezenet_v1.1-int8.param squeezenet_v1.1.param
 ${NCNN_DIR}/build-20220711/examples/squeezenet ../screenshot.png
 ```
 <left><img src="images/squeezenet_int8.png" width=100%></left>
-
