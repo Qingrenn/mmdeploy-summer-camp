@@ -70,7 +70,7 @@ $S = 127 / absmax(W)$
 
 具体实现见[源码](https://github.com/Tencent/ncnn/blob/master/src/layer/convolution.cpp)。
 
-对于一个卷积层来说，其对应的量化参数如下所示，其中`weight_data_int8_scales`是卷积权重对应的量化参数，而`bottom_blob_int8_scales`和`bottom_blob_int8_scales`分别对应卷积输入特征图对应和输出特征图对应的参数。
+对于一个卷积层来说，其对应的量化参数如下所示：
 
 ```C++
 // Convolution class
@@ -87,16 +87,16 @@ $S = 127 / absmax(W)$
 
 而`top_blob_int8_scales`则当前卷积层的下一个卷积（全连接）层输入特征图对应的缩放因子。
 
-forward_int8的流程:
+**forward_int8的流程**:
 
 1. 基于input_scale，对输入的特征图进行量化。
-2. 对于一个卷积核作一次卷积输出的的int32类型的累加和sum，进行反量化，即 sumfp32 = sum / (weight_scales * input_scale)。
+2. 对于一个卷积核作一次卷积输出的的int32类型的累加和sum，进行反量化，即 sumfp32 = sum / (weight_scale * input_scale)。
 3. 在sumfp32的基础上加上bias，通过激活函数。
 4. 对输出的激活值重量化：sumfp32 * scale_out。这一步基于的模型结构，也可能不做，如3.3图所示。
 5. 重复上述的2，3，4步直到完成整个卷积操作。
 
-input_scale=`bottom_blob_int8_scales`
+input_scale=`bottom_blob_int8_scales`中与该层激活值对应的值
 
-weight_scales=`bottom_blob_int8_scales`
+weight_scale=`weight_data_int8_scales`中与该层卷积中的某一个卷积核对应的值
 
-scale_out=`top_blob_int8_scales`
+scale_out=`top_blob_int8_scales`中与该层激活值对应的值
