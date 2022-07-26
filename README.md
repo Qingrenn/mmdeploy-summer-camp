@@ -10,4 +10,4 @@
 
 week1: 编译ncnn、学习naive conv的实现
 
-week2: 阅读量化论文、学习ncnn-int8的量化方案、学习ncnn-int8 的conv实现
+week2: 阅读量化论文、学习ncnn-int8的量化方案、学习ncnn-int8的conv实现
