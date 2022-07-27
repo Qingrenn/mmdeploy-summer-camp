@@ -10,6 +10,39 @@
 
 ## 2. 对称量化和非对称量化
 
+参考[Quantizing deep convolutional networks for efficient inference: A whitepaper](https://arxiv.org/abs/1806.08342)
+
+<left><img src="images/dc_fdc.png" width="60%"></left>
+
+### 2.1 非对称量化
+
+如上图右边所示。
+
+<left><img src="images/affine_quantizer.png" width="40%"></left>
+
+公式1，对真实值进行尺度缩放并round后，再加上一个int8的偏移量z，得到一个与真实值对应的整数。
+
+其中z称为零点,即量化后的z值对应真实值的0。
+
+公式2，对公式1计算得到的证书进行裁切，最终得到真实值对应的量化值。
+
+### 2.2 对称量化
+
+如上图左边所示。
+
+<left><img src="images/symmetric_quantizer.png" width="40%"></left>
+
+对称量化与非对称量化的不同在于其零点固定为0，也就是说量化后的0也对应真实值的0。
+
+
+### 2.3 对称量化VS非对称量化
+
+参考：https://intellabs.github.io/distiller/algo_quantization.html
+
+1.当使用非对称量化时，量化范围得到了充分的利用。这是因为我们将浮点数范围的最小/最大值精确地映射到量化范围的最小/最大值。而使用对称量化，如果浮点数的分布偏向一侧，可能会导致量化范围中大量的范围被用于量化本没有出现过值。这方面最极端的例子是ReLU之后，整个张量都是正的，使用对称量化意味着我们实际上少利用了1位，没有利用符号位。
+
+2.另一方面，在卷积和全连接层的实现上，由于没有零点这一个量化参数，对称量化实际上实现要简单得多。如果使用非对称量化，零点需要在硬件/算法上增加逻辑。例如，在对量化后的输入特征图进行zero_padding时，如果使用的是非对称量化，那么padding的值应当是z。
+
 ---
 
 ## 3. ncnn的量化方案
@@ -40,7 +73,7 @@ $S = 127 / absmax(W)$
 
 上图描述了确定激活值的量化参数的过程。
 1. 准备矫正集，将其送入模型，用于获得各层激活值的分布。
-2. 统计每一层激活值中的最大绝对值m及其分布。（统计激活值分布时设置了2048个等间隔的bin, 间隔大小为st0=2048/m）
+2. 统计每一层激活值中的最大绝对值m及其分布。（统计激活值分布时设置了2048个等间隔的bin, 间隔大小为st0=m/2048）
 3. 设置一个阈值$t \in [128,2048)$。
     - 计算裁切后的分布`clip_distribution`: 设置t个bins，将2048个bins中索引大于t的bin中的元素，全部统计至第t个bin中。如上图中部所示。
     - 计算量化后的分布`quantize_distribution`：设置128个bins，每个bins对应的间隔st1=st0*(t/128)。也就是将2048个bins中的前t个bins的数据重新划分至128个bins中。
@@ -65,6 +98,7 @@ $S = 127 / absmax(W)$
 
 经过上述过程，会生成量化后的模型权重。例如week1量化squeezenet任务中所生成的`squeezenet_v1.1-int8.bin`和`squeezenet_v1.1-int8.param`。
 
+---
 
 ## 4. ncnn-int8 的卷积实现
 
@@ -90,10 +124,13 @@ $S = 127 / absmax(W)$
 **forward_int8的流程**:
 
 1. 基于input_scale，对输入的特征图进行量化。
-2. 对于一个卷积核作一次卷积输出的的int32类型的累加和sum，进行反量化，即 sumfp32 = sum / (weight_scale * input_scale)。
+2. 对于一个卷积核作一次卷积输出的的int32类型的结果sum，进行反量化，即 sumfp32 = sum / (weight_scale * input_scale)。
 3. 在sumfp32的基础上加上bias，通过激活函数。
-4. 对输出的激活值重量化：sumfp32 * scale_out。这一步基于的模型结构，也可能不做，如3.3图所示。
-5. 重复上述的2，3，4步直到完成整个卷积操作。
+4. 对输出的激活值重量化：out = sumfp32 * scale_out。这一步基于模型的结构，也有可能不做out=sumfp32。如3.3图所示。
+5. 获得输出特征图中的一个元素的值out。重复上述的2，3，4步直到完成整个卷积操作。
+
+其中：
+
 
 input_scale=`bottom_blob_int8_scales`中与该层激活值对应的值
 
