@@ -22,9 +22,9 @@
 
 公式1，对真实值进行尺度缩放并round后，再加上一个int8的偏移量z，得到一个与真实值对应的整数。
 
-其中z称为零点,即量化后的z值对应真实值的0。
+其中z称为零点，即量化后的z值对应真实值的0。
 
-公式2，对公式1计算得到的证书进行裁切，最终得到真实值对应的量化值。
+公式2，对公式1计算得到的整数进行裁切，最终得到真实值对应的量化值。
 
 ### 2.2 对称量化
 
@@ -39,7 +39,7 @@
 
 参考：https://intellabs.github.io/distiller/algo_quantization.html
 
-1.当使用非对称量化时，量化范围得到了充分的利用。这是因为我们将浮点数范围的最小/最大值精确地映射到量化范围的最小/最大值。而使用对称量化，如果浮点数的分布偏向一侧，可能会导致量化范围中大量的范围被用于量化本没有出现过值。这方面最极端的例子是ReLU之后，整个张量都是正的，使用对称量化意味着我们实际上少利用了1位，没有利用符号位。
+1.当使用非对称量化时，量化范围得到了充分的利用。这是因为我们将浮点数范围的最小/最大值精确地映射到量化范围的最小/最大值。而使用对称量化，如果浮点数的分布偏向一侧，可能会导致量化范围中大量的范围被用于量化本没有出现过的值。这方面最极端的例子是ReLU之后，整个张量都是正的，使用对称量化意味着我们实际上没有利用符号位，浪费了1位量化空间。
 
 2.另一方面，在卷积和全连接层的实现上，由于没有零点这一个量化参数，对称量化实际上实现要简单得多。如果使用非对称量化，零点需要在硬件/算法上增加逻辑。例如，在对量化后的输入特征图进行zero_padding时，如果使用的是非对称量化，那么padding的值应当是z。
 
@@ -47,7 +47,7 @@
 
 ## 3. ncnn的量化方案
 
-参考：[知乎：MegFlow和ncnn int8简介](https://zhuanlan.zhihu.com/p/476605320)
+参考：[知乎：MegFlow和ncnn int8简介](https://zhuanlan.zhihu.com/p/476605320) 和[trt量化ppt](https://on-demand.gputechconf.com/gtc/2017/presentation/s7310-8-bit-inference-with-tensorrt.pdf)
 
 ncnn所采用的是一种后训练的对称量化方案，具体实现见[ncnn2table](https://github.com/Tencent/ncnn/blob/master/tools/quantize/ncnn2table.cpp)。
 
@@ -83,7 +83,20 @@ $S = 127 / absmax(W)$
 5. 对阈值t做一个映射，将其从bin的索引映射至真实值。真实的阈值为$t'=(t+0.5)/2048*m$
 6. 确定缩放尺度$S=127/t'$
 
+上述过程的伪代码如下：
+
+<left><img src="images/pseudocode.png" width="80%"></left>
+
+关于如何求取`quantize_distribution`和`expand_distribution`，可见如下例子：
+
+<left><img src="images/example.png" width="80%"></left>
+
 经过此过程，即可生成一个量化参数表。例如week1量化squeezenet任务中所生成的[squeezenet_v1.1.table](week1/Quantize-squeezenet/squeezenet_v1.1.table)。
+
+
+
+
+
 
 上述过程的[Python实现](https://github.com/BUG1989/caffe-int8-convert-tools/blob/93ec69e465252e2fb15b1fc8edde4a51c9e79dbf/caffe-int8-convert-tool-dev-weight.py#L483)和C++实现是同一个大佬写的。
 
