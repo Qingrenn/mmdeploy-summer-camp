@@ -1,0 +1,35 @@
+{
+    "version": "0.6.0",
+    "codebase": {
+        "task": "Classification",
+        "codebase": "mmcls",
+        "version": "0.23.2",
+        "pth": "/home/qingren/Project/mmclassification/checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth",
+        "config": "/home/qingren/Project/mmclassification/configs/resnet/resnet18_8xb32_in1k.py"
+    },
+    "codebase_config": {
+        "type": "mmcls",
+        "task": "Classification"
+    },
+    "onnx_config": {
+        "type": "onnx",
+        "export_params": true,
+        "keep_initializers_as_inputs": false,
+        "opset_version": 11,
+        "save_file": "end2end.onnx",
+        "input_names": [
+            "input"
+        ],
+        "output_names": [
+            "output"
+        ],
+        "input_shape": null,
+        "optimize": true
+    },
+    "backend_config": {
+        "type": "ncnn",
+        "precision": "INT8",
+        "use_vulkan": false
+    },
+    "calib_config": {}
+}

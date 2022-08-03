@@ -1,0 +1,16 @@
+{
+    "version": "0.6.0",
+    "task": "Classifier",
+    "models": [
+        {
+            "name": "resnet",
+            "net": "end2end.param",
+            "weights": "end2end.bin",
+            "backend": "ncnn",
+            "precision": "INT8",
+            "batch_size": 1,
+            "dynamic_shape": false
+        }
+    ],
+    "customs": []
+}
