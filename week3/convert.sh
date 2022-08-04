@@ -4,6 +4,7 @@ WORK_DIR=resnet18_ncnn_int8
 MMCLS_DIR=/home/qingren/Project/mmclassification
 MMDEPLOY_DIR=/home/qingren/Project/mmdeploy
 
+# onnx2ncnn
 export PATH=$PATH:/home/qingren/Project/GitHub/ncnn/build-20220711/install/bin
 
 python ${MMDEPLOY_DIR}/tools/deploy.py \
