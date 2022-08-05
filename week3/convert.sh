@@ -15,5 +15,5 @@ ${MMCLS_DIR}/demo/demo.JPEG \
 --work-dir ${WORK_DIR} \
 --device cpu \
 --quant \
---dump-info
+--show
 
