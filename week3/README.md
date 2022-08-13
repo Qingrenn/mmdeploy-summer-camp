@@ -63,4 +63,112 @@ resnet18在量化后，cifar10上的精度下降0.2个点，但是FPS增加了�
 
 <left><img src="images/resnet18_ncnn_benchmark.png" width="60%"></left>
 
+## 3. Operation Rewriting
+
+参考：
+[记录 mmdeploy 部署 ViT 到 ncnn](https://zhuanlan.zhihu.com/p/505481568)
+
+无论是将Pytorch模型转ONNX模型，还是在将ONNX模型转NCNN模型的过程中，都可能会遇到不同推理框架下算子不匹配的问题。
+
+例如在将ViT模型部署至ncnn的过程中，ONNX是不支持`MultiheadAttention`这个算子的，但是ncnn支持。
+
+- [onnx算子表](https://github.com/onnx/onnx/blob/main/docs/Operators.md)
+- [ncnn算子表](https://github.com/Tencent/ncnn/blob/master/docs/developer-guide/operators.md#multiheadattention:~:text=support_inplace-,MultiHeadAttention,-split%20q%20k)
+
+首先看`mmcls/backbones/vision_transformer.py`，在`TransformerEncoderLayer`的定义中使用了`MultiheadAttention`操作。
+
+`MultiheadAttention`的具体实现位于`mmcls/models/utils/attention.py`。
+
+由于ONNX不支持`MultiheadAttention`这个算子，在torch2onnx的时候，会将其拆开。然而在ncnn中是有这个算子的，所以要在要将`MultiheadAttention`打包成一个算子转成的onnx模型。
+
+在[mmdeploy-tutorial](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/05-tutorial/04_onnx_custom_op.md#%E8%87%AA%E5%AE%9A%E4%B9%89-onnx-%E7%AE%97%E5%AD%90)中介绍了在torch2onnx过程中自定义onnx算子的方法。（非常👍）
+
+mmdeploy采用了第三种自定义onnx算子的方法，用`torch.autograd.Function`来把算子的底层调用封装起来，并在其中定义了`symbolic`静态方法，那么该`Function`在执行`torch.onnx.export()`时就可以根据`symbolic`中定义的规则转换成 ONNX 算子。
+
+而针对`MultiheadAttention`这个算子，mmdeploy对其`forward`方法进行了重写。
+
+```Python
+# mmdeploy/codebase/mmcls/models/utils/attention.py
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmcls.models.utils.attention.MultiheadAttention.forward',
+    backend=Backend.NCNN.value)
+def multiheadattention__forward__ncnn(ctx, self, qkv_input):
+    
+    ...
+
+    out = MultiHeadAttentionop.apply(qkv_input, qkv_input, qkv_input, q_weight,
+                                     q_bias, k_weight, k_bias, v_weight,
+                                     v_bias, o_weight, o_bias, self.embed_dims,
+                                     self.num_heads)
+    return out
+```
+
+最后一行代码前都是关于权重的预处理过程，而最后一行调用了`MultiHeadAttentionop.apply`。接着跳转就会发现`MultiHeadAttentionop`是`torch.autograd.Function`的子类，其中实现了`symbolic`静态方法。因此，在将`MultiheadAttention`这个算子从Pytorch转至onnx时，就会按照`symbolic`方法中的定义，生成一个名为`mmdeploy::MultiHeadAttention`的ONNX算子。
+
+```Python
+# mmdeploy/mmcv/cnn/transformer.py
+class MultiHeadAttentionop(torch.autograd.Function):
+    """Create onnx::MultiHeadAttention op."""
+
+    @staticmethod
+    def forward(ctx, q: Tensor, k: Tensor, v: Tensor, q_weight: Tensor,
+                q_bias: Tensor, k_weight: Tensor, k_bias: Tensor,
+                v_weight: Tensor, v_bias: Tensor, o_weight: Tensor,
+                o_bias: Tensor, embed_dims: int, num_heads: int) -> Tensor:
+        return torch.rand_like(q)
+
+    @staticmethod
+    def symbolic(g, q: torch._C.Value, k: torch._C.Value, v: torch._C.Value,
+                 q_weight: torch._C.Value, q_bias: torch._C.Value,
+                 k_weight: torch._C.Value, k_bias: torch._C.Value,
+                 v_weight: torch._C.Value, v_bias: torch._C.Value,
+                 o_weight: torch._C.Value, o_bias: torch._C.Value,
+                 embed_dims: int, num_heads: int):
+
+        q_weight.setDebugName('q_weight')
+        q_bias.setDebugName('q_bias')
+
+        k_weight.setDebugName('k_weight')
+        k_bias.setDebugName('k_bias')
+
+        v_weight.setDebugName('v_weight')
+        v_bias.setDebugName('v_bias')
+
+        o_weight.setDebugName('o_weight')
+        o_bias.setDebugName('o_bias')
+
+        return g.op(
+            'mmdeploy::MultiHeadAttention',
+            q,
+            k,
+            v,
+            q_weight,
+            q_bias,
+            k_weight,
+            k_bias,
+            v_weight,
+            v_bias,
+            o_weight,
+            o_bias,
+            embed_dim_i=embed_dims,
+            num_heads_i=num_heads)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
