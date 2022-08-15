@@ -68,6 +68,8 @@ resnet18在量化后，cifar10上的精度下降0.2个点，但是FPS增加了�
 参考：
 [记录 mmdeploy 部署 ViT 到 ncnn](https://zhuanlan.zhihu.com/p/505481568)
 
+### 3.1 解决算子不匹配的问题
+
 无论是将Pytorch模型转ONNX模型，还是在将ONNX模型转NCNN模型的过程中，都可能会遇到不同推理框架下算子不匹配的问题。
 
 例如在将ViT模型部署至ncnn的过程中，ONNX是不支持`MultiheadAttention`这个算子的，但是ncnn支持。
@@ -154,7 +156,37 @@ class MultiHeadAttentionop(torch.autograd.Function):
             num_heads_i=num_heads)
 ```
 
+可以看到在`forward`方法中并未实现MultiHeadAttention的具体推理逻辑，但是确保了输入的数目和输出的张量的维度是正确的。如果不用onnxruntime做推理，那么forward的具体逻辑就可以不实现，但是需要确保输入的数目和输出的维度是正确的。因为关注的是模型转换能否正确的转换这个算子，没有考虑onnxruntime的推理结果。
 
+而考虑到量化的过程中，需要调用ppq对模型的权重进行量化，同样需要确保在ppq中实现MultiHeadAttention这个算子。
+
+### 3.2 重写机制
+
+参考：[mmdeploy-support_new_model](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/04-developer-guide/support_new_model.md)
+
+重写的代码位于`mmdeploy/core/rewriters`。
+
+该module中实现了三个重写类：`FuctionRewriter`，`ModuleRewriter`和`SymbolicRewriter`类。而在`RewriterManager`类中定义了三个属性，分别是三个重写类的实例。
+
+**记录重写信息**
+
+`RewriterManager`类的实例`REWRITER_MANAGER`是一个全局变量。当我们需要重写function，module或者symbolic时，需要调用`REWRITER_MANAGER`的对应属性`FUNCTION_REWRITER`, `MODULE_REWRITER`或`SYMBOLIC_REWRITER`中的`regisyer_xxx()`方法，从而将重写信息记录在该属性的`_registry`中。
+
+**重写的实现**
+
+对于function和symbolic，重写过程由`RewriterContext`进行管理，其`enter()`方法中又调用了`REWRITER_MANAGER`对象中`FUNCTION_REWRITER`属性和`SYMBOLIC_REWRITER`属性的`enter()`方法。而具体重写过程的实现就是在`enter()`方法中实现的。
+
+对于model，重写过程被包装在`patch_model`方法中，其中直接调用了`MODULE_REWRITER`的`patch_model`方法。
+
+**何时启动重写**
+
+mmdeploy在`mmdeploy/apis/onnx/export.py`中包装了`torch.onnx.export`方法。
+
+在调用`torch.onnx.export`将torch模型转至onnx前，调用了`RewriterContext`和`patch_model`对需要重写的fucntion，symbolic和model先进行了重写。
+
+
+
+<img src="images/Rewiter.png" width="80%">
 
 
 
