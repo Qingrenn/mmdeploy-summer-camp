@@ -11,7 +11,7 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
 ${MMDEPLOY_DIR}/configs/mmpose/pose-detection_ncnn_static-256x256.py \
 ../hourglass52_coco_256x256.py \
 ${MMPOSE_DIR}/checkpoints/hourglass52_coco_256x256-4ec713ba_20200709.pth \
-${MMPOSE_DIR}/tests/data/coco/000000000785.jpg \
+${MMDEPLOY_DIR}/demo/resources/human-pose.jpg \
 --work-dir ${WORK_DIR} \
 --device cpu \
 --quant \
