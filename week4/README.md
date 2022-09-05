@@ -8,14 +8,14 @@
 
 | Arch              | Input Size | AP    | $AP^{50}$ | $AP^{75}$ | AR    | $AR^{50}$ | log |
 | :---------------- | :--------- | :---- | :-------- | :-------- | :---- | :-------- | :-- |
-| pose_hourglass_52 | 256x256    | 0.717 | 0.894     | 0.790     | 0.774 | 0.933     | [log](hourglass52_coco_256x256-v2/ncnn-hourglass/results_ncnn/log.txt) |
+| pose_hourglass_52 | 256x256    | 0.717 | 0.894     | 0.790     | 0.774 | 0.933     | [log](hourglass52_coco_256x256/ncnn-hourglass/results_ncnn/log.txt) |
 | pose_hourglass_52 | 384x384    | 0.737 | 0.897     | 0.799     | 0.789 | 0.938     | [log](hourglass52_coco_384x384/ncnn-hourglass/results_ncnn/test.log) |
 
 ## Backend: ncnn int_8
 
 | Arch              | Input Size | AP    | $AP^{50}$ | $AP^{75}$ | AR    | $AR^{50}$ | log |
 | :---------------- | :--------- | :---- | :-------- | :-------- | :---- | :-------- | :-- |
-| pose_hourglass_52 | 256x256    | 0.713 | 0.892     | 0.787     | 0.771 | 0.932     | [log](hourglass52_coco_256x256-v2/ncnn-hourglass/results_ncnn_int8/log.txt) |
+| pose_hourglass_52 | 256x256    | 0.713 | 0.892     | 0.787     | 0.771 | 0.932     | [log](hourglass52_coco_256x256/ncnn-hourglass/results_ncnn_int8/log.txt) |
 | pose_hourglass_52 | 384x384    | 0.730 | 0.896     | 0.796     | 0.785 | 0.937     | [log](hourglass52_coco_384x384/ncnn-hourglass/results_ncnn_int8/test.log) |
 
 ## Notation
