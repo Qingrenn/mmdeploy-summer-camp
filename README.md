@@ -21,5 +21,5 @@
 - 利用mmdeploy将resnet18转换并量化至ncnn-int8
 - 理解tools/deploy.py的工作流程
 
-[week4](week4/README.md):
+[Week4](week4/README.md):
 - 量化评估mmpose-Hourglass
