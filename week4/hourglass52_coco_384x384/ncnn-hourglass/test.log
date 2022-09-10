@@ -772,3 +772,6 @@
 2022-09-10 17:57:37,649 - test - INFO - [__ncnn_execute]-77210 times per count: 376.89 ms, 2.65 FPS
 2022-09-10 17:58:16,284 - test - INFO - [__ncnn_execute]-77310 times per count: 376.90 ms, 2.65 FPS
 2022-09-10 17:58:55,066 - test - INFO - [__ncnn_execute]-77410 times per count: 376.91 ms, 2.65 FPS
+2022-09-10 17:59:33,565 - test - INFO - [__ncnn_execute]-77510 times per count: 376.92 ms, 2.65 FPS
+2022-09-10 18:00:12,189 - test - INFO - [__ncnn_execute]-77610 times per count: 376.92 ms, 2.65 FPS
+2022-09-10 18:00:50,459 - test - INFO - [__ncnn_execute]-77710 times per count: 376.93 ms, 2.65 FPS

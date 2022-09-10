@@ -47,7 +47,7 @@ backend_config：使用ncnn或者ncnn-int8。
 backend_config = backend_config = dict(type='ncnn', precision='FP32', use_vulkan=False)
 ```
 
-[新增configs](configs)
+⚙️ 新增configs：[configs](configs)
 
 ### 2.3 部署并测试
 
