@@ -162,7 +162,7 @@ class MultiHeadAttentionop(torch.autograd.Function):
 
 ### 3.2 重写机制
 
-参考：[mmdeploy-support_new_model](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/04-developer-guide/support_new_model.md)
+参考：[mmdeploy-support_new_model](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/07-developer-guide/support_new_model.md)
 
 重写的代码位于`mmdeploy/core/rewriters`。
 
