@@ -10,7 +10,6 @@
 
 根据配置文件: [config-hourglass52_coco_256x256.py](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py)，可以知道整个姿态检测网络使用`HourglassNet`作为backbone，而使用了`TopdownHeatmapMultiStageHead`作为keypoint_head（关键点的预测头）。
 
-
 在[HourglassNet](https://github.com/open-mmlab/mmpose/blob/master/mmpose/models/backbones/hourglass.py)中，只涉及到了torch中的`Conv2d`和`Upsample`两种算子。其前向传播，输入为256\*256\*3的图像，输出为多个64\*64\*256的heatmap组成的list。输出的list是包含了网络中各个hourglass模块提取的特征。在配置文件中，HourglassNet仅仅只使用了一个hourglass模块，因此输出的list中仅包含一个heatmap。
 
 在[TopdownHeatmapMultiStageHead](https://github.com/open-mmlab/mmpose/blob/master/mmpose/models/heads/topdown_heatmap_multi_stage_head.py)中，涉及到了`ConvTranspose2d`和`Conv2d`两种算子。其前向传播，输入为一个包含多个heatmap的list，然后通过多个预测头分别将其映射成64\*64\*17的预测图，并输出一个包含多个预测图的list。在配置文件中，TopdownHeatmapMultiStageHead仅仅只有一个stage，也就是只包含一个预测头；同时，反卷积数量也设置为0，因此该部分也仅仅只使用了`Conv2d`算子。
