@@ -4,7 +4,7 @@
 
 <left><img src="images/benchmark.png" width="60%"></left>
 
-**以下所有测试均将配置文件中的`flip_test`置为`False`。**
+**MMPose的model conifg中`flip_test`为`True`, 以下所有测试均将其置为了`False`。**
 
 ## 2. Backend: Pytorch
 
@@ -40,13 +40,7 @@
 | :---------------- | :--------- | :---- | :-------- | :-------- | :---- | :-------- | :-- |
 | pose_hourglass_52 | 256x256    | 0.717 | 0.894     | 0.790     | 0.774 | 0.933     | [log](hourglass52_coco_256x256/ncnn-hourglass/results_ort/log.txt) |
 
-# Regression Test
-
-模型精度已经单测过了
-
-
-
-## 4. Notes
+## 7. Notes
 
 1. 测试转换后的模型精度时，对于 mmpose 模型，在模型配置文件中 `flip_test` 需设置为 `False`, 参见[benchmark](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/03-benchmark/benchmark.md)。
 2. mmpose 模型需要额外的输入，但我们无法直接获取它。在导出模型时，可以使用 `$MMDEPLOY_DIR/demo/resources/human-pose.jpg`作为输入, 参见[supported-codebases/mmpose](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/04-supported-codebases/mmpose.md)
