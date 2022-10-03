@@ -45,6 +45,6 @@
 1. 测试转换后的模型精度时，对于 mmpose 模型，在模型配置文件中 `flip_test` 需设置为 `False`, 参见[benchmark](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/03-benchmark/benchmark.md)。
 2. mmpose 模型需要额外的输入，但我们无法直接获取它。在导出模型时，可以使用 `$MMDEPLOY_DIR/demo/resources/human-pose.jpg`作为输入, 参见[supported-codebases/mmpose](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/04-supported-codebases/mmpose.md)
 
-## 5. Appendix
+## 8. Appendix
 
 <left><img src="images/end2end.png" width="60%"></left>
