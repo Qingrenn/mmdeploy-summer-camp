@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WORK_DIR=hourglass_trt
+WORK_DIR=hourglass_trt_fp32
 MMPOSE_DIR=/home/qingren/Project/mmpose
 MMDEPLOY_DIR=/home/qingren/Project/mmdeploy
 
